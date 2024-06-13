@@ -153,7 +153,7 @@ def life_experience(model, inc_loader, args):
     
 
     details = {"Task Info": all_task_info,
-               "Final Test Accuracy": (int) (sum(result_test_a[-1])/len(result_test_a[-1])),
+               "Final Test Accuracy": (float) (sum(result_test_a[-1])/len(result_test_a[-1])),
                "Individual Test Accuracy": individual_accuracy,
                }
     
