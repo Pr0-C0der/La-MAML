@@ -133,15 +133,6 @@ def life_experience(model, inc_loader, args):
             result_test_t.append(task_info["task"])
 
 
-    print("####Final Validation Accuracy####")
-    print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_val_a[-1])/len(result_val_a[-1]), result_val_a[-1]))
-
-
-    if args.calc_test_accuracy:
-        print("####Final Test Accuracy####")
-        print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_test_a[-1])/len(result_test_a[-1]), result_test_a[-1]))
-
-    
     individual_accuracy = []
     for acc in result_test_a[-1]:
         # Convert tensor to float
@@ -151,8 +142,18 @@ def life_experience(model, inc_loader, args):
         rounded_value = round(float_value, 3)
         individual_accuracy.append(rounded_value)
 
+    print("####Final Validation Accuracy####")
+    print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_val_a[-1])/len(result_val_a[-1]), individual_accuracy))
+
+
+    if args.calc_test_accuracy:
+        print("####Final Test Accuracy####")
+        print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_test_a[-1])/len(result_test_a[-1]), individual_accuracy))
+
+    
+
     details = {"Task Info": all_task_info,
-               "Final Test Accuracy": sum(result_test_a[-1])/len(result_test_a[-1]),
+               "Final Test Accuracy": (int) (sum(result_test_a[-1])/len(result_test_a[-1])),
                "Individual Test Accuracy": individual_accuracy,
                }
     
