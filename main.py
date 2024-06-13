@@ -5,12 +5,14 @@ import time
 import os
 # import ipdb
 from tqdm import tqdm
-
+import json
+import os
 import torch
 from torch.autograd import Variable
-import parser as file_parser
+import parsert as file_parser
 from metrics.metrics import confusion_matrix
 from utils import misc_utils
+from utils.misc_utils import log_details_to_json
 from main_multi_task import life_experience_iid, eval_iid_tasks
 
 # eval_class_tasks(model, tasks, args) : returns lists of avg losses after passing thru model
@@ -88,8 +90,11 @@ def life_experience(model, inc_loader, args):
     if args.loader == "class_incremental_loader":
         evaluator = eval_class_tasks
 
+    all_task_info = []
     for task_i in range(inc_loader.n_tasks):
         task_info, train_loader, _, _ = inc_loader.new_task()
+        print(task_info)
+        all_task_info.append(task_info)
         for ep in range(args.n_epochs):
 
             model.real_epoch = ep
@@ -131,10 +136,17 @@ def life_experience(model, inc_loader, args):
     print("####Final Validation Accuracy####")
     print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_val_a[-1])/len(result_val_a[-1]), result_val_a[-1]))
 
+
     if args.calc_test_accuracy:
         print("####Final Test Accuracy####")
         print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_test_a[-1])/len(result_test_a[-1]), result_test_a[-1]))
 
+    details = {"Task Info": all_task_info,
+               "Final Test Accuracy": sum(result_test_a[-1])/len(result_test_a[-1]),
+               "Individual Test Accuracy": result_test_a[-1],
+               }
+    
+    log_details_to_json(file_path=args.log_details, details=details)
 
     time_end = time.time()
     time_spent = time_end - time_start

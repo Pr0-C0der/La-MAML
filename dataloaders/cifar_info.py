@@ -254,3 +254,30 @@ class CIFAR100(CIFAR10):
         'md5': '7973b15100ade9c7d40fb424638fde48',
     }
 
+    def __init__(self, root, train=True, transform=None, target_transform=None, download=False):
+        print("INIT")
+        super(CIFAR100, self).__init__(root, train, transform, target_transform, download)
+        self._sample_50_per_class()
+
+    def _sample_50_per_class(self):
+        print("SAMPLING 50 per class")
+        # Convert targets to numpy array for easier indexing
+        targets_np = np.array(self.targets)
+        sampled_data = []
+        sampled_targets = []
+        sampled_super_targets = []
+
+        # Iterate over each class and sample 50 examples
+        for class_id in range(100):
+            class_indices = np.where(targets_np == class_id)[0]
+            print(class_indices)
+            sampled_indices = np.random.choice(class_indices, 50, replace=False)
+
+            sampled_data.append(self.data[sampled_indices])
+            sampled_targets.extend(targets_np[sampled_indices])
+            sampled_super_targets.extend(np.array(self.super_targets)[sampled_indices])
+
+        self.data = np.vstack(sampled_data)
+        self.targets = sampled_targets
+        self.super_targets = sampled_super_targets
+

@@ -50,6 +50,8 @@ def get_parser():
                         help='(not set by user)')
     parser.add_argument('--calc_test_accuracy', default=False , action='store_true',
                         help='Calculate test accuracy along with val accuracy')
+    parser.add_argument('--log_details', default="logs/",
+                        help='log implementation details')
 
     # data parameters
     parser.add_argument('--data_path', default='data/',
@@ -77,6 +79,8 @@ def get_parser():
                         help="number of classes to increment by in class incremental loader")
     parser.add_argument('--test_batch_size', type=int, default=100000 ,
                         help='batch size to use during testing.')
+    parser.add_argument('--percentage', type=int, default=100 ,
+                        help='percentage to sample')
 
 
     # La-MAML parameters

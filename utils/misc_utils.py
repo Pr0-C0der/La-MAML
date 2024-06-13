@@ -8,7 +8,19 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
+def log_details_to_json(file_path, details):
+    """
+    Create a JSON file at the specified path and log details into it.
 
+    :param file_path: The path where the JSON file will be created.
+    :param details: A dictionary containing the details to log.
+    """
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    
+    # Write the details to the JSON file
+    with open(file_path, 'w') as json_file:
+        json.dump(details, json_file, indent=4)
 
 def to_onehot(targets, n_classes):
     onehot = torch.zeros(targets.shape[0], n_classes).to(targets.device)

@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 import torch
 from torch.autograd import Variable
-import parser as file_parser
+import parsert as file_parser
 from metrics.metrics import confusion_matrix
 from utils import misc_utils
 from main_multi_task import life_experience_iid, eval_iid_tasks

@@ -7,3 +7,6 @@ quadprog
 torchvision
 urllib3
 uuid
+tqdm
+wandb
+scipy

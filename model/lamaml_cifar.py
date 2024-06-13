@@ -22,7 +22,8 @@ class Net(BaseNet):
     def take_loss(self, t, logits, y):
         # compute loss on data from a single task
         offset1, offset2 = self.compute_offsets(t)
-        loss = self.loss(logits[:, offset1:offset2], y-offset1)
+        target = y-offset1
+        loss = self.loss(logits[:, offset1:offset2], target.long())
 
         return loss
 

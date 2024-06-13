@@ -151,7 +151,7 @@ class Net(BaseNet):
             if len(self.observed_tasks) > 1:
                 # for each past task
                 for tt in range(len(self.observed_tasks) - 1):
-
+                    past_task = self.observed_tasks[tt]
                     store_grad(self.parameters, self.grads, self.grad_dims,
                                past_task)
 

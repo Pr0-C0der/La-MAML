@@ -16,6 +16,26 @@ import random
 # --------
 # Datasets CIFAR and TINYIMAGENET
 # --------
+def sample_per_class(data, targets, percentage=100, type_of="train"):
+    """Sample datapoints from each class for few shot classification"""
+    sampled_data = []
+    sampled_targets = []
+    targets_np = np.array(targets)
+    
+    for class_id in range(100):
+        class_indices = np.where(targets_np == class_id)[0]
+        if(type_of == "train"):
+            sampled_indices = np.random.choice(class_indices, 5*(percentage), replace=False)
+        else:
+            sampled_indices = np.random.choice(class_indices, percentage, replace=False)
+        
+        sampled_data.append(data[sampled_indices])
+        sampled_targets.extend(targets_np[sampled_indices])
+    
+    sampled_data = np.vstack(sampled_data)
+    sampled_targets = np.array(sampled_targets)
+    print(f"DONE SAMPLING FOR TRAIN AND TEST FROM ORIGINAL DATASET %{percentage}")
+    return sampled_data, sampled_targets
 
 class IncrementalLoader:
 
@@ -89,7 +109,10 @@ class IncrementalLoader:
             "task": self._current_task,
             "max_task": len(self.increments),
             "n_train_data": x_train.shape[0],
-            "n_test_data": x_test.shape[0]
+            "n_test_data": x_test.shape[0],
+            "number of samples per class in train": (int)((1-(self._opt.validation))*5*(self._opt.percentage)),
+            "number of samples per class in val": (int)(((self._opt.validation))*5*(self._opt.percentage)),
+            "number of samples per class in test": (int)(self._opt.percentage)
         }
 
         self._current_task += 1
@@ -120,6 +143,7 @@ class IncrementalLoader:
             return self.test_tasks
         else:
             raise NotImplementedError("Unknown mode {}.".format(dataset_type))
+    
 
     def get_dataset_info(self):
         if(self._opt.dataset == 'tinyimagenet'):
@@ -157,7 +181,7 @@ class IncrementalLoader:
             shuffle=shuffle,
             num_workers=self._workers
         )
-
+    
 
     def _setup_data(self, datasets, class_order_type=False, seed=1, increment=10, validation_split=0.):
         # FIXME: handles online loading of images
@@ -169,7 +193,6 @@ class IncrementalLoader:
 
         current_class_idx = 0  # When using multiple datasets
         for dataset in datasets:
-
             if(self._opt.dataset == 'tinyimagenet'):
                 root_path = self._opt.data_path
                 train_dataset = dataset.base_dataset(root_path + 'train/')
@@ -200,10 +223,22 @@ class IncrementalLoader:
                 test_dataset = dataset.base_dataset(root_path, train=False, download=True)
 
                 x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
+
+                if self._opt.dataset == 'cifar100':
+                    # Sample 50 examples per class for the training dataset
+                    x_train, y_train = sample_per_class(train_dataset.data, train_dataset.targets, percentage=10,type_of="train")
+                else:
+                    x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
+
                 x_val, y_val, x_train, y_train = self._split_per_class(
                     x_train, y_train, validation_split
                 )
-                x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
+
+                if self._opt.dataset == 'cifar100':
+                    # Sample 50 examples per class for the test dataset
+                    x_test, y_test = sample_per_class(test_dataset.data, test_dataset.targets, percentage=10, type_of="test")
+                else:
+                    x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
 
                 order = [i for i in range(len(np.unique(y_train)))]
                 if class_order_type == 'random':
