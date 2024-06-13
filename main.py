@@ -141,9 +141,19 @@ def life_experience(model, inc_loader, args):
         print("####Final Test Accuracy####")
         print("Final Results:- \n Total Accuracy: {} \n Individual Accuracy: {}".format(sum(result_test_a[-1])/len(result_test_a[-1]), result_test_a[-1]))
 
+    
+    individual_accuracy = []
+    for acc in result_test_a[-1]:
+        # Convert tensor to float
+        float_value = float(acc)
+
+        # Round float to 3 decimal places
+        rounded_value = round(float_value, 3)
+        individual_accuracy.append(rounded_value)
+
     details = {"Task Info": all_task_info,
                "Final Test Accuracy": sum(result_test_a[-1])/len(result_test_a[-1]),
-               "Individual Test Accuracy": result_test_a[-1],
+               "Individual Test Accuracy": individual_accuracy,
                }
     
     log_details_to_json(file_path=args.log_details, details=details)
