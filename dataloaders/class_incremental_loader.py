@@ -27,7 +27,7 @@ def sample_per_class(data, targets, percentage=100, type_of="train"):
         if(type_of == "train"):
             sampled_indices = np.random.choice(class_indices, 5*(percentage), replace=False)
         else:
-            sampled_indices = np.random.choice(class_indices, percentage, replace=False)
+            sampled_indices = np.random.choice(class_indices, 100, replace=False)
         
         sampled_data.append(data[sampled_indices])
         sampled_targets.extend(targets_np[sampled_indices])
@@ -111,8 +111,7 @@ class IncrementalLoader:
             "n_train_data": x_train.shape[0],
             "n_test_data": x_test.shape[0],
             "number of samples per class in train": (int)((1-(self._opt.validation))*5*(self._opt.percentage)),
-            "number of samples per class in val": (int)(((self._opt.validation))*5*(self._opt.percentage)),
-            "number of samples per class in test": (int)(self._opt.percentage)
+            "number of samples per class in val": (int)(((self._opt.validation))*5*(self._opt.percentage))
         }
 
         self._current_task += 1
