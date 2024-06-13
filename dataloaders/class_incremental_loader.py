@@ -225,7 +225,7 @@ class IncrementalLoader:
 
                 if self._opt.dataset == 'cifar100':
                     # Sample 50 examples per class for the training dataset
-                    x_train, y_train = sample_per_class(train_dataset.data, train_dataset.targets, percentage=10,type_of="train")
+                    x_train, y_train = sample_per_class(train_dataset.data, train_dataset.targets, percentage=self._opt.percentage,type_of="train")
                 else:
                     x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
 
@@ -235,7 +235,7 @@ class IncrementalLoader:
 
                 if self._opt.dataset == 'cifar100':
                     # Sample 50 examples per class for the test dataset
-                    x_test, y_test = sample_per_class(test_dataset.data, test_dataset.targets, percentage=10, type_of="test")
+                    x_test, y_test = sample_per_class(test_dataset.data, test_dataset.targets, percentage=100, type_of="test")
                 else:
                     x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
 
