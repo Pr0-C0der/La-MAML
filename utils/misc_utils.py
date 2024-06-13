@@ -7,7 +7,19 @@ import random
 import numpy as np
 import torch
 from tqdm import tqdm
+import tensorflow as tf
 
+# Function to convert tensor to list
+def convert_tensors(obj):
+    if isinstance(obj, tf.Tensor):
+        return obj.numpy().tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_tensors(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_tensors(i) for i in obj]
+    else:
+        return obj
+    
 def log_details_to_json(file_path, details):
     """
     Create a JSON file at the specified path and log details into it.
@@ -20,7 +32,7 @@ def log_details_to_json(file_path, details):
     
     # Write the details to the JSON file
     with open(file_path, 'w') as json_file:
-        json.dump(details, json_file, indent=4)
+        json.dump(convert_tensors(details), json_file, indent=4)
 
 def to_onehot(targets, n_classes):
     onehot = torch.zeros(targets.shape[0], n_classes).to(targets.device)
