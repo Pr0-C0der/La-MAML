@@ -18,7 +18,7 @@ class ModelFactory():
                         net_list.append(('rep', [], ''))
                 return net_list
 
-        elif dataset == "tinyimagenet":
+        elif dataset == "tinyimagenet" or dataset=='fruit':
 
             if model_type == 'pc_cnn':
                 channels = 160

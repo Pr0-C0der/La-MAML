@@ -6,6 +6,7 @@ from PIL import Image
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchvision import datasets, transforms
+from utils.misc_utils import split_dataset
 
 # the _get_datasets deals with getting the thing from the file i guess
 from dataloaders.idataset import _get_datasets, DummyDataset
@@ -108,10 +109,10 @@ class IncrementalLoader:
             "increment": self.increments[self._current_task],
             "task": self._current_task,
             "max_task": len(self.increments),
-            "n_train_data": x_train.shape[0],
-            "n_test_data": x_test.shape[0],
-            "number of samples per class in train": (int)((1-(self._opt.validation))*5*(self._opt.percentage)),
-            "number of samples per class in val": (int)(((self._opt.validation))*5*(self._opt.percentage))
+            "n_train_data": x_train.shape,
+            "n_test_data": x_test.shape,
+            # "number of samples per class in train": (int)((1-(self._opt.validation))*5*(self._opt.percentage)),
+            # "number of samples per class in val": (int)(((self._opt.validation))*5*(self._opt.percentage))
         }
 
         self._current_task += 1
@@ -147,6 +148,8 @@ class IncrementalLoader:
     def get_dataset_info(self):
         if(self._opt.dataset == 'tinyimagenet'):
             n_inputs = 3*64*64        
+        elif(self._opt.dataset == 'fruit'):
+            n_inputs = 3*100*100
         else:
             n_inputs = self.data_train.shape[3]*self.data_train.shape[1]*self.data_train.shape[2]
         n_outputs = self._opt.increment * len(self.increments)
@@ -173,14 +176,29 @@ class IncrementalLoader:
             batch_size = self._test_batch_size
         else:
             raise NotImplementedError("Unknown mode {}.".format(mode))
-
+        
+        if self._opt.dataset=='tinyimagenet':
+            return DataLoader(
+                DummyDataset(x, y, trsf, pretrsf, self._opt.dataset=='tinyimagenet'),
+                batch_size=batch_size,
+                shuffle=shuffle,
+                num_workers=self._workers
+            )
+        elif(self._opt.dataset=='fruit'):
+            return DataLoader(
+                DummyDataset(x, y, trsf, pretrsf, self._opt.dataset=='fruit'),
+                batch_size=batch_size,
+                shuffle=shuffle,
+                num_workers=self._workers
+            )
+        
         return DataLoader(
-            DummyDataset(x, y, trsf, pretrsf, self._opt.dataset=='tinyimagenet'),
-            batch_size=batch_size,
-            shuffle=shuffle,
-            num_workers=self._workers
-        )
-    
+                DummyDataset(x, y, trsf, pretrsf, self._opt.dataset=='tinyimagenet'),
+                batch_size=batch_size,
+                shuffle=shuffle,
+                num_workers=self._workers
+            )
+            
 
     def _setup_data(self, datasets, class_order_type=False, seed=1, increment=10, validation_split=0.):
         # FIXME: handles online loading of images
@@ -193,22 +211,58 @@ class IncrementalLoader:
         current_class_idx = 0  # When using multiple datasets
         for dataset in datasets:
             if(self._opt.dataset == 'tinyimagenet'):
+                # Val folder is arranged in approrpriate structure. Test folder images are deleted. Test dataset = Val folder images
+                # Val dataset is sampled from train images
                 root_path = self._opt.data_path
                 train_dataset = dataset.base_dataset(root_path + 'train/')
                 test_dataset = dataset.base_dataset(root_path + 'val/')
-                print(train_dataset)
 
                 train_dataset.data = train_dataset.samples
                 test_dataset.data = test_dataset.samples
 
                 x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
-                print("YO")
                 x_val, y_val, x_train, y_train = self._list_split_per_class(
                     x_train, y_train, validation_split
                 )
-                print("YO")
                 x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
 
+                order = [i for i in range(len(np.unique(y_train)))]
+                if class_order_type == 'random':
+                    random.seed(seed)  # Ensure that following order is determined by seed:
+                    random.shuffle(order)
+                    print("Class order:", order)
+                elif class_order_type == 'old' and dataset.class_order is not None:
+                    order = dataset.class_order
+                else:
+                    print("Classes are presented in a chronological order")
+
+            elif (self._opt.dataset == "fruit"):
+                # Split from root path into train (train) and test (val) (0.8 0.2) initial
+                # validation split must be 0.25 minimum
+
+                root_path = self._opt.data_path
+
+                output_path = '/data/fruit_splitted/'
+                split_dataset(root_path, output_path, self._opt.train_ratio)
+                train_dataset = dataset.base_dataset(output_path + 'train/')
+                test_dataset = dataset.base_dataset(output_path + 'val/')
+
+                train_dataset.data = train_dataset.samples
+                test_dataset.data = test_dataset.samples
+
+                # validation split line: (change it if data is more)
+                validation_split = max(0.25, validation_split)
+
+                x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
+                x_val, y_val, x_train, y_train = self._list_split_per_class(
+                    x_train, y_train, validation_split
+                )
+                x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
+
+                print(f"Class order names: {train_dataset.class_to_idx}")
+
+                # For fruit wise classification i.e train for apple as task 1 then train for banana as task 2 ....
+                # use class order as 'chrono' or 'old'
                 order = [i for i in range(len(np.unique(y_train)))]
                 if class_order_type == 'random':
                     random.seed(seed)  # Ensure that following order is determined by seed:

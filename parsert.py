@@ -139,5 +139,12 @@ def get_parser():
                         help='Eta for mean step (default 1)')
     parser.add_argument('--fisher_gamma', default=0.95, type=float,
                         help='')
+    
+
+
+    # For fruit dataset only
+    parser.add_argument('--train_ratio', default=0.8, type=float,
+                        help='Train/test split ratio (how much training data should remain)')
+
 
     return parser

@@ -7,6 +7,47 @@ import random
 import numpy as np
 import torch
 from tqdm import tqdm
+import shutil
+
+# Splitting the fruit dataset into train and val.
+def split_dataset(input_folder, output_folder, train_ratio=0.8):
+    # Define the paths for the train and test datasets
+    train_folder = os.path.join(output_folder, 'train')
+    test_folder = os.path.join(output_folder, 'val')
+    
+    # Create train and test directories if they do not exist
+    os.makedirs(train_folder, exist_ok=True)
+    os.makedirs(test_folder, exist_ok=True)
+    
+    # List the subdirectories (categories) in the input folder
+    categories = [d for d in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder, d))]
+    
+    for category in categories:
+        category_path = os.path.join(input_folder, category, 'images')
+        images = os.listdir(category_path)
+        random.shuffle(images)  # Shuffle the images for randomness
+        
+        # Determine the split index
+        split_index = int(len(images) * train_ratio)
+        
+        # Split the images into train and test sets
+        train_images = images[:split_index]
+        test_images = images[split_index:]
+        
+        # Create category folders in the train and test directories
+        train_category_folder = os.path.join(train_folder, category, 'images')
+        test_category_folder = os.path.join(test_folder, category, 'images')
+        os.makedirs(train_category_folder, exist_ok=True)
+        os.makedirs(test_category_folder, exist_ok=True)
+        
+        # Copy the images to the respective folders
+        for image in train_images:
+            shutil.copy(os.path.join(category_path, image), os.path.join(train_category_folder, image))
+        
+        for image in test_images:
+            shutil.copy(os.path.join(category_path, image), os.path.join(test_category_folder, image))
+            
+        print(f'Category: {category} - Train: {len(train_images)}, Test: {len(test_images)}')
 
 # Function to convert tensor to list
 def convert_tensors(obj):
@@ -17,6 +58,7 @@ def convert_tensors(obj):
     else:
         return obj
     
+# Logging the data to json file
 def log_details_to_json(file_path, details):
     """
     Create a JSON file at the specified path and log details into it.
