@@ -196,14 +196,17 @@ class IncrementalLoader:
                 root_path = self._opt.data_path
                 train_dataset = dataset.base_dataset(root_path + 'train/')
                 test_dataset = dataset.base_dataset(root_path + 'val/')
+                print(train_dataset)
 
                 train_dataset.data = train_dataset.samples
                 test_dataset.data = test_dataset.samples
 
                 x_train, y_train = train_dataset.data, np.array(train_dataset.targets)
+                print("YO")
                 x_val, y_val, x_train, y_train = self._list_split_per_class(
                     x_train, y_train, validation_split
                 )
+                print("YO")
                 x_test, y_test = test_dataset.data, np.array(test_dataset.targets)
 
                 order = [i for i in range(len(np.unique(y_train)))]

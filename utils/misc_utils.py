@@ -7,13 +7,10 @@ import random
 import numpy as np
 import torch
 from tqdm import tqdm
-import tensorflow as tf
 
 # Function to convert tensor to list
 def convert_tensors(obj):
-    if isinstance(obj, tf.Tensor):
-        return obj.numpy().tolist()
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {k: convert_tensors(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [convert_tensors(i) for i in obj]

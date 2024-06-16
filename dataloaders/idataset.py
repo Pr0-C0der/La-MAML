@@ -96,10 +96,13 @@ class DataHandler:
 
 class iImgnet(DataHandler):
 
+    def open_and_convert_to_rgb(image_path):
+        return Image.open(image_path[0]).convert('RGB')
+
     base_dataset = datasets.ImageFolder
 
     top_transforms = [
-        lambda x: Image.open(x[0]).convert('RGB'),
+        open_and_convert_to_rgb,
     ]
 
     train_transforms = [

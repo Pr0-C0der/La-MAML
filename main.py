@@ -155,7 +155,7 @@ def life_experience(model, inc_loader, args):
     details = {"Task Info": all_task_info,
                "Final Test Accuracy": (float) (sum(result_test_a[-1])/len(result_test_a[-1])),
                "Individual Test Accuracy": individual_accuracy,
-               "Parameters": {args}
+               "Parameters": args
                }
     
     log_details_to_json(file_path=args.log_details, details=details)
